@@ -1412,7 +1412,7 @@ require([
     outline: { color: [74, 222, 128, 0.35], width: 1 }
   });
   const alignmentSym = new SimpleLineSymbol({ color: [255, 237, 0, 0.6], width: 3 });
-  const selectedSym = new SimpleLineSymbol({ color: [255, 237, 0, 1], width: 5 });
+  const selectedSym = new SimpleLineSymbol({ color: [255, 255, 255, 1], width: 5 });
   const userSym = new SimpleMarkerSymbol({
     color: [74, 222, 128, 1],
     size: 14,
@@ -1424,7 +1424,7 @@ require([
     style: "diamond",
     outline: { color: [10, 25, 41, 0.8], width: 1.5 }
   });
-  const connectSym = new SimpleLineSymbol({ color: [255, 255, 255, 0.4], width: 1.5, style: "dash" });
+  const connectSym = new SimpleLineSymbol({ color: [220, 220, 220, 0.55], width: 1.5, style: "dash" });
   const targetSym = new SimpleMarkerSymbol({
     color: [56, 189, 248, 1],
     size: 14,

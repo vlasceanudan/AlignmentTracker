@@ -677,12 +677,18 @@ require([
     });
   }
 
+  function applyAlignmentSymbols() {
+    filteredAlignments.forEach(function(alignment) {
+      alignment.graphic.symbol = selectedAlignment && selectedAlignment.id === alignment.id ? selectedSym : alignmentSym;
+    });
+  }
+
   function renderFilteredAlignments() {
     alignmentLayer.removeAll();
     filteredAlignments.forEach(function(alignment) {
-      alignment.graphic.symbol = selectedAlignment && selectedAlignment.id === alignment.id ? selectedSym : alignmentSym;
       alignmentLayer.add(alignment.graphic);
     });
+    applyAlignmentSymbols();
   }
 
   function populateProjectOptions() {
@@ -766,6 +772,7 @@ require([
     showStationDisplay();
     alignmentSelect.value = String(alignment.id);
     renderFilteredAlignments();
+    applyAlignmentSymbols();
     clearTrackGraphics();
     if (previousAlignmentId !== alignment.id) {
       clearStakeoutTarget(true);

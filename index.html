@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Alignment Tracker</title>
+<link rel="manifest" href="manifest.json?v=20260409-2">
+<meta name="theme-color" content="#143E6F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/dark/main.css">
+<link rel="stylesheet" href="style.css?v=20260409-2">
+<script src="https://js.arcgis.com/4.29/"></script>
+</head>
+<body>
+<div id="viewDiv"></div>
+<div class="top-bar">
+  <div class="top-left-actions">
+    <button class="top-action" id="btnBasemap" onclick="toggleBasemap()">Satellite</button>
+    <button class="top-action" id="btnRecenter" onclick="recenterMap()" style="display:none">⊕ Center</button>
+  </div>
+  <div class="alignment-name" id="alignmentName">No alignment selected</div>
+  <div class="gps-indicator inactive" id="gpsIndicator" onclick="toggleDebug()"></div>
+  <span class="gps-accuracy" id="gpsAccuracy"></span>
+</div>
+<div class="debug-log" id="debugLog"></div>
+<div class="hud">
+  <div class="hud-inner expanded" id="hudInner">
+    <button class="hud-toggle" onclick="toggleHud()"></button>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnTrackMode" onclick="setAppMode('track')">Track</button>
+      <button class="mode-btn" id="btnStakeoutMode" onclick="setAppMode('stakeout')">Stakeout</button>
+    </div>
+    <div class="station-display" id="stationDisplay" style="display:none;">
+      <div class="metric-card">
+        <div class="metric-label" id="primaryMetricLabel">Chainage</div>
+        <div class="metric-value" id="chainageValue">&mdash;</div>
+        <div class="metric-unit">km</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label" id="secondaryMetricLabel">Offset</div>
+        <div class="metric-value offset" id="offsetValue">&mdash;</div>
+        <div class="metric-unit" id="offsetDir">m</div>
+      </div>
+    </div>
+    <div class="controls-row share-row" id="shareRow" style="display:none;">
+      <button class="btn btn-secondary" id="btnShare" onclick="openShareModal()">&#8679; Share</button>
+    </div>
+    <div class="selector-grid">
+      <div class="selector">
+        <label for="projectSelect">Project</label>
+        <select id="projectSelect">
+          <option value="">Loading projects...</option>
+        </select>
+      </div>
+      <div class="selector">
+        <label for="alignmentSelect">Alignment</label>
+        <select id="alignmentSelect" disabled>
+          <option value="">Select a project first</option>
+        </select>
+      </div>
+    </div>
+    <div class="stakeout-row hidden" id="stakeoutRow">
+      <input class="stakeout-input" type="text" id="stakeoutInput" placeholder="1+250" inputmode="text" autocomplete="off">
+      <button class="btn btn-secondary" onclick="applyStakeoutTarget()">Set Target</button>
+    </div>
+    <div class="status-msg" id="statusMsg">Loading alignments...</div>
+  </div>
+</div>
+<div class="share-overlay" id="shareOverlay" aria-hidden="true">
+  <div class="share-screen">
+    <div class="share-header">
+      <div>
+        <div class="share-eyebrow">Share</div>
+        <div class="share-title">Share current position</div>
+      </div>
+      <button class="top-action" type="button" onclick="closeShareModal()">Close</button>
+    </div>
+    <div class="share-body">
+      <div class="share-card">
+        <div class="share-card-label">Current data</div>
+        <div class="share-summary">
+          <div class="share-summary-row">
+            <span class="share-summary-key">Project</span>
+            <span class="share-summary-value" id="shareProjectValue">--</span>
+          </div>
+          <div class="share-summary-row">
+            <span class="share-summary-key">Alignment</span>
+            <span class="share-summary-value" id="shareAlignmentValue">--</span>
+          </div>
+          <div class="share-summary-row">
+            <span class="share-summary-key" id="sharePrimaryKey">Chainage</span>
+            <span class="share-summary-value" id="sharePrimaryValue">--</span>
+          </div>
+          <div class="share-summary-row">
+            <span class="share-summary-key" id="shareSecondaryKey">Offset</span>
+            <span class="share-summary-value" id="shareSecondaryValue">--</span>
+          </div>
+          <div class="share-summary-row">
+            <span class="share-summary-key">Coordinates</span>
+            <span class="share-summary-value" id="shareCoordsValue">Waiting for GPS</span>
+          </div>
+        </div>
+      </div>
+      <div class="share-card">
+        <div class="share-card-top">
+          <div>
+            <div class="share-card-label">Captured photos</div>
+            <div class="share-subtext" id="shareSelectionSummary">No photos captured yet.</div>
+          </div>
+          <button class="btn btn-secondary share-take-btn" type="button" onclick="triggerCameraCapture()">Take Photo</button>
+        </div>
+        <div class="share-support-note" id="shareSupportNote">Take one or more photos, then tap the ones you want to include.</div>
+        <div class="photo-grid" id="photoStrip">
+          <div class="photo-empty" id="photoEmptyState">No photos yet. Use <strong>Take Photo</strong> to capture one from the camera.</div>
+        </div>
+      </div>
+    </div>
+    <div class="share-footer">
+      <button class="btn btn-primary" id="btnShareSelected" type="button" onclick="sharePosition()" disabled>Share Selected</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+<script src="app.js?v=20260409-2"></script>
+</body>
+</html>

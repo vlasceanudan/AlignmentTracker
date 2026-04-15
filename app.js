@@ -873,19 +873,29 @@ require([
   }
 
   function parseChainageInput(value) {
-    const match = String(value || "").trim().match(/^([+-]?)(\d+)\s*\+\s*(\d{1,3})$/);
-    if (!match) {
+    const normalized = String(value || "").trim();
+    if (!normalized || normalized.indexOf(".") !== -1) {
       return null;
     }
 
-    const sign = match[1] === "-" ? -1 : 1;
-    const km = Number(match[2]);
-    const meters = Number(match[3]);
-    if (!Number.isFinite(km) || !Number.isFinite(meters) || meters >= 1000) {
-      return null;
+    if (/^[+-]?\d+$/.test(normalized)) {
+      const totalMeters = Number(normalized);
+      return Number.isFinite(totalMeters) ? totalMeters : null;
     }
 
-    return sign * ((km * 1000) + meters);
+    const match = normalized.match(/^([+-]?)(\d+)\s*\+\s*(\d{1,3})$/);
+    if (match) {
+      const sign = match[1] === "-" ? -1 : 1;
+      const km = Number(match[2]);
+      const meters = Number(match[3]);
+      if (!Number.isFinite(km) || !Number.isFinite(meters) || meters >= 1000) {
+        return null;
+      }
+
+      return sign * ((km * 1000) + meters);
+    }
+
+    return null;
   }
 
   function resolvePointAtDistance(alignment, rawDistance) {
@@ -1115,7 +1125,7 @@ require([
       clearStakeoutTarget(false);
       showStationDisplay();
       resetComputedValues();
-      setStatus("Enter a valid chainage like 1+250.");
+      setStatus("Enter a whole-meter chainage like 1250 or 1+250. Decimals are not supported.");
       updateShareSummaryIfOpen();
       return;
     }

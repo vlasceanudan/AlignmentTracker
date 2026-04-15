@@ -1192,11 +1192,11 @@ require([
     if (gpsWatchId !== null) return;
 
     if (!navigator.geolocation) {
-      if (gpsIndicatorEl) gpsIndicatorEl.className = "gps-indicator error";
+      gpsIndicatorEl.className = "gps-indicator error";
       return;
     }
 
-    if (gpsIndicatorEl) gpsIndicatorEl.className = "gps-indicator";
+    gpsIndicatorEl.className = "gps-indicator";
 
     gpsWatchId = navigator.geolocation.watchPosition(
       function(pos) {
@@ -1257,7 +1257,7 @@ require([
         updateFromUserPoint(smoothedPoint);
       },
       function(err) {
-        if (gpsIndicatorEl) gpsIndicatorEl.className = "gps-indicator error";
+        gpsIndicatorEl.className = "gps-indicator error";
         setStatus("GPS: " + err.message);
       },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
@@ -1412,7 +1412,7 @@ require([
     outline: { color: [74, 222, 128, 0.35], width: 1 }
   });
   const alignmentSym = new SimpleLineSymbol({ color: [255, 237, 0, 0.6], width: 3 });
-  const selectedSym = new SimpleLineSymbol({ color: [255, 255, 255, 1], width: 6 });
+  const selectedSym = new SimpleLineSymbol({ color: [255, 237, 0, 1], width: 5 });
   const userSym = new SimpleMarkerSymbol({
     color: [74, 222, 128, 1],
     size: 14,

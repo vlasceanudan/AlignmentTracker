@@ -169,7 +169,7 @@ require([
     const secondarySuffix = directionBadge
       ? directionBadge.textContent.trim()
       : offsetDirEl.textContent.replace(/^m\s*/, "").trim();
-    const date = new Date().toLocaleDateString();
+    const date = new Date().toLocaleDateString("en-GB");
     const time = new Date().toLocaleTimeString();
     const isTrackMode = activeMode === "track";
     const primaryLabel = isTrackMode ? "Chainage" : "Target";

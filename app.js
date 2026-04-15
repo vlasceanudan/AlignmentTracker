@@ -211,6 +211,21 @@ require([
     };
   }
 
+  // Cache the PORR logo so it's only fetched once per session
+  var _porrLogoImg = null;
+  var _porrLogoPromise = null;
+  function loadPorrLogo() {
+    if (_porrLogoImg) return Promise.resolve(_porrLogoImg);
+    if (_porrLogoPromise) return _porrLogoPromise;
+    _porrLogoPromise = new Promise(function(resolve) {
+      var logoImg = new Image();
+      logoImg.onload = function() { _porrLogoImg = logoImg; resolve(logoImg); };
+      logoImg.onerror = function() { resolve(null); };
+      logoImg.src = "Porr_logo.svg";
+    });
+    return _porrLogoPromise;
+  }
+
   function addTextOverlayToPhoto(file, text) {
     return new Promise(function(resolve) {
       var url = URL.createObjectURL(file);
@@ -224,84 +239,101 @@ require([
       img.onload = function() {
         URL.revokeObjectURL(url);
 
-        var canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        var ctx = canvas.getContext("2d");
+        loadPorrLogo().then(function(logoImg) {
+          var canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          var ctx = canvas.getContext("2d");
 
-        ctx.drawImage(img, 0, 0);
+          ctx.drawImage(img, 0, 0);
 
-        var shortSide = Math.min(img.naturalWidth, img.naturalHeight);
-        var fontSize = Math.max(18, Math.min(56, Math.round(shortSide * 0.018)));
-        var lineHeight = Math.round(fontSize * 1.45);
-        var padding = Math.round(fontSize * 0.85);
-        var cornerMargin = Math.round(fontSize * 0.9);
+          var shortSide = Math.min(img.naturalWidth, img.naturalHeight);
+          var fontSize = Math.max(18, Math.min(56, Math.round(shortSide * 0.018)));
+          var lineHeight = Math.round(fontSize * 1.45);
+          var padding = Math.round(fontSize * 0.85);
+          var cornerMargin = Math.round(fontSize * 0.9);
 
-        ctx.font = "bold " + fontSize + "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif";
-        var lines = text.split("\n").filter(Boolean);
-        var maxWidth = 0;
-        lines.forEach(function(line) {
-          var w = ctx.measureText(line).width;
-          if (w > maxWidth) maxWidth = w;
-        });
-
-        var boxW = maxWidth + padding * 2;
-        var boxH = lines.length * lineHeight + padding * 2;
-        var boxX = canvas.width - boxW - cornerMargin;
-        var boxY = canvas.height - boxH - cornerMargin;
-        var radius = Math.round(fontSize * 0.4);
-
-        ctx.globalAlpha = 0.62;
-        ctx.fillStyle = "#000000";
-        if (ctx.roundRect) {
-          ctx.beginPath();
-          ctx.roundRect(boxX, boxY, boxW, boxH, radius);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.moveTo(boxX + radius, boxY);
-          ctx.lineTo(boxX + boxW - radius, boxY);
-          ctx.quadraticCurveTo(boxX + boxW, boxY, boxX + boxW, boxY + radius);
-          ctx.lineTo(boxX + boxW, boxY + boxH - radius);
-          ctx.quadraticCurveTo(boxX + boxW, boxY + boxH, boxX + boxW - radius, boxY + boxH);
-          ctx.lineTo(boxX + radius, boxY + boxH);
-          ctx.quadraticCurveTo(boxX, boxY + boxH, boxX, boxY + boxH - radius);
-          ctx.lineTo(boxX, boxY + radius);
-          ctx.quadraticCurveTo(boxX, boxY, boxX + radius, boxY);
-          ctx.closePath();
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1.0;
-
-        ctx.font = "bold " + fontSize + "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "right";
-        ctx.textBaseline = "top";
-        ctx.shadowColor = "rgba(0,0,0,0.7)";
-        ctx.shadowBlur = Math.round(fontSize * 0.25);
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
-
-        lines.forEach(function(line, i) {
-          var textX = boxX + boxW - padding;
-          var textY = boxY + padding + i * lineHeight;
-          ctx.fillText(line, textX, textY);
-        });
-
-        ctx.shadowColor = "transparent";
-
-        canvas.toBlob(function(blob) {
-          if (!blob) {
-            resolve(file);
-            return;
+          // --- PORR logo — top-right corner ---
+          if (logoImg) {
+            // viewBox 113.38 x 72.45  →  aspect ≈ 1.565
+            var logoW = Math.max(60, Math.min(280, Math.round(shortSide * 0.14)));
+            var logoH = Math.round(logoW * (72.45 / 113.38));
+            var logoX = canvas.width - logoW - cornerMargin;
+            var logoY = cornerMargin;
+            ctx.globalAlpha = 0.92;
+            ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+            ctx.globalAlpha = 1.0;
           }
-          var baseName = (file.name || "photo").replace(/\.[^.]+$/, "");
-          var stamped = new File([blob], baseName + "_stamped.jpg", {
-            type: "image/jpeg",
-            lastModified: Date.now()
+
+          // --- Text box — bottom-right corner ---
+          ctx.font = "bold " + fontSize + "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif";
+          var lines = text.split("\n").filter(Boolean);
+          var maxWidth = 0;
+          lines.forEach(function(line) {
+            var w = ctx.measureText(line).width;
+            if (w > maxWidth) maxWidth = w;
           });
-          resolve(stamped);
-        }, "image/jpeg", 0.92);
+
+          var boxW = maxWidth + padding * 2;
+          var boxH = lines.length * lineHeight + padding * 2;
+          var boxX = canvas.width - boxW - cornerMargin;
+          var boxY = canvas.height - boxH - cornerMargin;
+          var radius = Math.round(fontSize * 0.4);
+
+          // PORR blue background
+          ctx.globalAlpha = 0.88;
+          ctx.fillStyle = "#143E6F";
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(boxX, boxY, boxW, boxH, radius);
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(boxX + radius, boxY);
+            ctx.lineTo(boxX + boxW - radius, boxY);
+            ctx.quadraticCurveTo(boxX + boxW, boxY, boxX + boxW, boxY + radius);
+            ctx.lineTo(boxX + boxW, boxY + boxH - radius);
+            ctx.quadraticCurveTo(boxX + boxW, boxY + boxH, boxX + boxW - radius, boxY + boxH);
+            ctx.lineTo(boxX + radius, boxY + boxH);
+            ctx.quadraticCurveTo(boxX, boxY + boxH, boxX, boxY + boxH - radius);
+            ctx.lineTo(boxX, boxY + radius);
+            ctx.quadraticCurveTo(boxX, boxY, boxX + radius, boxY);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1.0;
+
+          // PORR yellow text
+          ctx.font = "bold " + fontSize + "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif";
+          ctx.fillStyle = "#FFED00";
+          ctx.textAlign = "right";
+          ctx.textBaseline = "top";
+          ctx.shadowColor = "rgba(0,0,0,0.45)";
+          ctx.shadowBlur = Math.round(fontSize * 0.2);
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+
+          lines.forEach(function(line, i) {
+            var textX = boxX + boxW - padding;
+            var textY = boxY + padding + i * lineHeight;
+            ctx.fillText(line, textX, textY);
+          });
+
+          ctx.shadowColor = "transparent";
+
+          canvas.toBlob(function(blob) {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            var baseName = (file.name || "photo").replace(/\.[^.]+$/, "");
+            var stamped = new File([blob], baseName + "_stamped.jpg", {
+              type: "image/jpeg",
+              lastModified: Date.now()
+            });
+            resolve(stamped);
+          }, "image/jpeg", 0.92);
+        }); // end loadPorrLogo().then
       };
 
       img.src = url;

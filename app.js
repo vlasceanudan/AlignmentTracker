@@ -169,7 +169,8 @@ require([
     const secondarySuffix = directionBadge
       ? directionBadge.textContent.trim()
       : offsetDirEl.textContent.replace(/^m\s*/, "").trim();
-    const date = new Date().toLocaleDateString("en-GB");
+    const _d = new Date();
+    const date = String(_d.getDate()).padStart(2, "0") + "/" + String(_d.getMonth() + 1).padStart(2, "0") + "/" + _d.getFullYear();
     const time = new Date().toLocaleTimeString();
     const isTrackMode = activeMode === "track";
     const primaryLabel = isTrackMode ? "Chainage" : "Target";
@@ -1356,10 +1357,13 @@ require([
     }
 
     const payload = buildSharePayload();
+    const overlayText = payload.text.split("\n").filter(function(l) {
+      return !l.startsWith("Maps:");
+    }).join("\n");
 
     const stampedFiles = await Promise.all(
       selectedPhotos.map(function(photo) {
-        return addTextOverlayToPhoto(photo.file, payload.text);
+        return addTextOverlayToPhoto(photo.file, overlayText);
       })
     );
 

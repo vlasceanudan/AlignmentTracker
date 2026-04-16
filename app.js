@@ -434,10 +434,21 @@ require([
         removePhoto(photo.id);
       });
 
+      const obsInput = document.createElement("textarea");
+      obsInput.className = "photo-observation-input";
+      obsInput.placeholder = "Observation\u2026";
+      obsInput.rows = 2;
+      obsInput.value = photo.observation || "";
+      obsInput.addEventListener("input", function() {
+        const p = capturedPhotos.find(function(x) { return x.id === photo.id; });
+        if (p) p.observation = obsInput.value;
+      });
+
       thumb.appendChild(image);
       thumb.appendChild(badge);
       item.appendChild(thumb);
       item.appendChild(removeBtn);
+      item.appendChild(obsInput);
       photoStripEl.appendChild(item);
     });
 
@@ -1352,7 +1363,8 @@ require([
         id: id,
         file: file,
         dataUrl: loadEvent.target.result,
-        selected: true
+        selected: true,
+        observation: ""
       });
       renderSharePhotos();
     };
@@ -1380,15 +1392,29 @@ require([
 
     const stampedFiles = await Promise.all(
       selectedPhotos.map(function(photo) {
-        return addTextOverlayToPhoto(photo.file, overlayText);
+        const photoOverlayText = (photo.observation && photo.observation.trim())
+          ? overlayText + "\nObservation: " + photo.observation.trim()
+          : overlayText;
+        return addTextOverlayToPhoto(photo.file, photoOverlayText);
       })
     );
+
+    const obsLines = selectedPhotos
+      .filter(function(p) { return p.observation && p.observation.trim(); })
+      .map(function(p, i) {
+        return selectedPhotos.length > 1
+          ? "Photo " + (i + 1) + " Observation: " + p.observation.trim()
+          : "Observation: " + p.observation.trim();
+      });
+    const shareText = obsLines.length
+      ? payload.text + "\n" + obsLines.join("\n")
+      : payload.text;
 
     if (navigator.share) {
       if (canShareFiles(stampedFiles)) {
         try {
           await navigator.share({
-            text: payload.text,
+            text: shareText,
             files: stampedFiles
           });
           return;
@@ -1400,7 +1426,7 @@ require([
       }
 
       try {
-        await navigator.share({ text: payload.text });
+        await navigator.share({ text: shareText });
         return;
       } catch (err) {
         if (err && err.name === "AbortError") {
@@ -1409,7 +1435,7 @@ require([
       }
     }
 
-    window.open("https://wa.me/?text=" + encodeURIComponent(payload.text), "_blank");
+    window.open("https://wa.me/?text=" + encodeURIComponent(shareText), "_blank");
   };
 
   window.toggleBasemap = function() {

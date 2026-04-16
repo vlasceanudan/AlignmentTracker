@@ -561,6 +561,27 @@ html, body {
   text-align:center;
   z-index:2;
 }
+.photo-observation-input {
+  width:100%;
+  margin-top:6px;
+  padding:7px 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,237,0,0.22);
+  background:rgba(10,25,41,0.55);
+  color:var(--text);
+  font-size:12px;
+  line-height:1.4;
+  resize:none;
+  box-sizing:border-box;
+  font-family:inherit;
+}
+.photo-observation-input::placeholder {
+  color:var(--text-dim);
+}
+.photo-observation-input:focus {
+  outline:none;
+  border-color:rgba(255,237,0,0.55);
+}
 .share-footer {
   padding-top:12px;
 }

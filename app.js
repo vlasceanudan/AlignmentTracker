@@ -76,7 +76,7 @@ require([
     },
     ro: {
       satellite: "Satelit", map: "Hartă", center: "⊕ Centrare",
-      track: "Urmărire", stakeout: "Implantare",
+      track: "Urmărire", stakeout: "Trasare",
       chainage: "Km", offset: "Offset", targetKm: "Km Țintă", distance: "Distanță",
       shareBtn: "↑ Partajare", setTarget: "Setează Ținta", takePhoto: "Fotografiază",
       shareSelected: "Partajează Selectate", close: "Închide",

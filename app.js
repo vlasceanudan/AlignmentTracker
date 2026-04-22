@@ -72,7 +72,8 @@ require([
       shareOffsetLabel: "Offset", shareDistanceLabel: "Distance",
       shareCoords: "Coords", shareTime: "Time",
       cardinals: ["N","NE","E","SE","S","SW","W","NW"],
-      stakeoutPlaceholder: "1250 or 1+250"
+      stakeoutPlaceholder: "1250 or 1+250",
+      autoSnap: "Auto Snap"
     },
     ro: {
       satellite: "Satelit", map: "Hartă", center: "⊕ Centrare",
@@ -117,7 +118,8 @@ require([
       shareOffsetLabel: "Offset", shareDistanceLabel: "Distanță",
       shareCoords: "Coord", shareTime: "Ora",
       cardinals: ["N","NE","E","SE","S","SV","V","NV"],
-      stakeoutPlaceholder: "1250 sau 1+250"
+      stakeoutPlaceholder: "1250 sau 1+250",
+      autoSnap: "Ax Auto"
     }
   };
 
@@ -151,6 +153,7 @@ require([
   let capturedPhotos = [];
   let photoIdCounter = 0;
   let autoSelectDone = false;
+  let autoSnapEnabled = true;
   const GPS_ALPHA = 0.4;
 
   // --- Element refs ---
@@ -188,6 +191,7 @@ require([
   const shareSupportNoteEl = document.getElementById("shareSupportNote");
   const btnShareSelectedEl = document.getElementById("btnShareSelected");
   const langSelectEl = document.getElementById("langSelect");
+  const btnAutoSnapEl = document.getElementById("btnAutoSnap");
 
   const basemapModes = {
     map: "dark-gray-vector",
@@ -639,6 +643,7 @@ require([
   }
 
   function autoSelectClosestAlignment(userPoint) {
+    if (!autoSnapEnabled) return;
     if (autoSelectDone || selectedAlignment || !allAlignments.length) return;
     autoSelectDone = true;
     var alignment = findClosestAlignment(userPoint);
@@ -1652,9 +1657,21 @@ require([
     setMetricMode(activeMode);
     if (_statusKey) setStatusKey(_statusKey);
     updateShareSummaryIfOpen();
+    btnAutoSnapEl.textContent = t("autoSnap");
   }
 
   window.setLanguage = setLanguage;
+
+  function setAutoSnap(enabled) {
+    autoSnapEnabled = enabled;
+    localStorage.setItem("alignmentTrackerAutoSnap", enabled ? "true" : "false");
+    btnAutoSnapEl.classList.toggle("active", enabled);
+    btnAutoSnapEl.textContent = t("autoSnap");
+  }
+
+  window.toggleAutoSnap = function() {
+    setAutoSnap(!autoSnapEnabled);
+  };
 
   applyBasemapMode(currentBasemapMode);
   setMetricMode(activeMode);
@@ -1662,6 +1679,9 @@ require([
 
   const savedLang = localStorage.getItem("alignmentTrackerLang") || "en";
   setLanguage(savedLang);
+
+  const savedSnap = localStorage.getItem("alignmentTrackerAutoSnap");
+  setAutoSnap(savedSnap === null ? true : savedSnap === "true");
 
   // --- Event Listeners ---
   langSelectEl.addEventListener("change", function(event) {
